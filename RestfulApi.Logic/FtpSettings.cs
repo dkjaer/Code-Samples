@@ -26,8 +26,8 @@
             SubFolder = string.Empty;
             CheckForFile = true;
             RenameAfterUpload = true;
-            ConnectMode = ConnectMode.PASV;
-            TransferType = TransferType.BINARY;
+            ConnectMode = ConnectMode.Passive;
+            TransferType = TransferType.Binary;
         }
     }
 }

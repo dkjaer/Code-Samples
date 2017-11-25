@@ -14,11 +14,11 @@ namespace FileTransfer
         /// <member>   
         /// Represents active connect mode
         /// </member>
-        ACTIVE = 1,
+        Active = 1,
 
         /// <member>   
         /// Represents PASV connect mode
         /// </member>
-        PASV = 2
+        Passive = 2
     }
 }

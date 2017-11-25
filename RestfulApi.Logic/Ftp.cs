@@ -100,13 +100,13 @@ namespace FileTransfer
             {
                 // determine the character to send
                 string typeStr = ASCII_CHAR;
-                if (value.Equals(TransferType.BINARY))
+                if (value.Equals(TransferType.Binary))
                 {
                     typeStr = BINARY_CHAR;
                 }
 
                 // send the command
-                string reply = control.SendCommand("TYPE " + typeStr);
+                var reply = control.SendCommand("TYPE " + typeStr);
                 lastValidReply = control.ValidateReply(reply, "200");
 
                 // record the type
@@ -152,12 +152,12 @@ namespace FileTransfer
         /// <summary>  
         /// Record of the transfer type - make the default ASCII
         /// </summary>
-        TransferType transferType = TransferType.ASCII;
+        TransferType transferType = TransferType.Ascii;
 
         /// <summary>  Record of the connect mode - make the default PASV ( as this was
         /// the original mode supported )
         /// </summary>
-        ConnectMode connectMode = ConnectMode.PASV;
+        ConnectMode connectMode = ConnectMode.Passive;
 
         /// <summary>  
         /// Holds the last valid reply from the server on the control socket
@@ -172,7 +172,7 @@ namespace FileTransfer
         /// </param>
         public Ftp(string remoteHost)
         {
-            control = new ControlSocket(remoteHost, ControlSocket.CONTROL_PORT, null, 0);
+            control = new ControlSocket(remoteHost, ControlSocket.ControlPort, null, 0);
         }
 
         /// <summary>  
@@ -184,7 +184,7 @@ namespace FileTransfer
         /// </param>
         public Ftp(IPAddress remoteAddress)
         {
-            control = new ControlSocket(remoteAddress, ControlSocket.CONTROL_PORT, null, 0);
+            control = new ControlSocket(remoteAddress, ControlSocket.ControlPort, null, 0);
         }
 
         /// <summary>  
@@ -217,7 +217,7 @@ namespace FileTransfer
         /// </param>
         public Ftp(string remoteHost, StreamWriter log, int timeout)
         {
-            control = new ControlSocket(remoteHost, ControlSocket.CONTROL_PORT, log, timeout);
+            control = new ControlSocket(remoteHost, ControlSocket.ControlPort, log, timeout);
         }
 
         /// <summary>  
@@ -256,8 +256,9 @@ namespace FileTransfer
         {
             control = new ControlSocket(
                 remoteAddress,
-                ControlSocket.CONTROL_PORT,
-                log, timeout);
+                ControlSocket.ControlPort,
+                log, 
+                timeout);
         }
 
         /// <summary>  
@@ -373,7 +374,7 @@ namespace FileTransfer
         /// Put a stream of data onto the FTP server. It
         /// is placed in the current directory.
         /// </summary>
-        /// <param name="srcStream">  
+        /// <param name="sourceStream">  
         /// input stream of data to put
         /// </param>
         /// <param name="remoteFile"> 
@@ -401,7 +402,7 @@ namespace FileTransfer
         public void Put(string localPath, string remoteFile, bool append)
         {
             // get according to set type
-            if (TransferType == TransferType.ASCII)
+            if (TransferType == TransferType.Ascii)
             {
                 PutASCII(localPath, remoteFile, append);
             }
@@ -418,7 +419,7 @@ namespace FileTransfer
         /// is placed in the current directory. Allows appending
         /// if current file exists
         /// </summary>
-        /// <param name="srcStream">  
+        /// <param name="sourceStream">  
         /// input stream of data to put
         /// </param>
         /// <param name="remoteFile"> 
@@ -430,9 +431,9 @@ namespace FileTransfer
         public void Put(Stream sourceStream, string remoteFile, bool append)
         {
             // get according to set type
-            if (TransferType == TransferType.ASCII)
+            if (TransferType == TransferType.Ascii)
             {
-                PutASCII(sourceStream, remoteFile, append);
+                PutAscii(sourceStream, remoteFile, append);
             }
             else
             {
@@ -464,7 +465,7 @@ namespace FileTransfer
             var sock = data;
 
             // in active mode, we must accept the FTP server's connection
-            if (connectMode == ConnectMode.ACTIVE)
+            if (connectMode == ConnectMode.Active)
             {
                 sock = data.Accept();
             }
@@ -512,15 +513,15 @@ namespace FileTransfer
         void PutASCII(string localPath, string remoteFile, bool append)
         {
             // create an inputstream & pass to common method
-            var srcStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
-            PutASCII(srcStream, remoteFile, append);
+            var sourceStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
+            PutAscii(sourceStream, remoteFile, append);
         }
 
         /// <summary>  
         /// Put as ASCII, i.e. read a line at a time and write
         /// inserting the correct FTP separator
         /// </summary>
-        /// <param name="srcStream">  
+        /// <param name="sourceStream">  
         /// input stream of data to put
         /// </param>
         /// <param name="remoteFile"> 
@@ -529,16 +530,16 @@ namespace FileTransfer
         /// <param name="append">     
         /// true if appending, false otherwise
         /// </param>
-        void PutASCII(Stream sourceStream, string remoteFile, bool append)
+        void PutAscii(Stream sourceStream, string remoteFile, bool append)
         {
             // need to read line by line ...
-            StreamReader reader = new StreamReader(sourceStream);
+            var reader = new StreamReader(sourceStream);
             InitPut(remoteFile, append);
 
             // get an character output stream to write to ... AFTER we
             // have the ok to go ahead AND AFTER we've successfully opened a
             // stream for the local file
-            StreamWriter writer = new StreamWriter(GetDataStream());
+            var writer = new StreamWriter(GetDataStream());
 
             // write line by line, writing \r\n as required by RFC959 after
             // each line
@@ -546,7 +547,7 @@ namespace FileTransfer
             while ((line = reader.ReadLine()) != null)
             {
                 writer.Write(line, 0, line.Length);
-                writer.Write(ControlSocket.EOL, 0, ControlSocket.EOL.Length);
+                writer.Write(ControlSocket.EndOfLine, 0, ControlSocket.EndOfLine.Length);
             }
 
             reader.Close();
@@ -573,14 +574,14 @@ namespace FileTransfer
             // open input stream to read source file ... do this
             // BEFORE opening output stream to server, so if file not
             // found, an exception is thrown
-            var srcStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
-            PutBinary(srcStream, remoteFile, append);
+            var sourceStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
+            PutBinary(sourceStream, remoteFile, append);
         }
 
         /// <summary>  
         /// Put as binary, i.e. read and write raw bytes
         /// </summary>
-        /// <param name="srcStream">  
+        /// <param name="sourceStream">  
         /// input stream of data to put
         /// </param>
         /// <param name="remoteFile"> 
@@ -670,9 +671,9 @@ namespace FileTransfer
         public void Get(string localPath, string remoteFile)
         {
             // get according to set type
-            if (TransferType == TransferType.ASCII)
+            if (TransferType == TransferType.Ascii)
             {
-                GetASCII(localPath, remoteFile);
+                GetAscii(localPath, remoteFile);
             }
             else
             {
@@ -686,7 +687,7 @@ namespace FileTransfer
         /// Get data from the FTP server. Uses the currently
         /// set transfer mode.
         /// </summary>
-        /// <param name="destStream"> 
+        /// <param name="destinationStream"> 
         /// data stream to write data to
         /// </param>
         /// <param name="remoteFile"> 
@@ -695,9 +696,9 @@ namespace FileTransfer
         public void Get(Stream destinationStream, string remoteFile)
         {
             // get according to set type
-            if (TransferType == TransferType.ASCII)
+            if (TransferType == TransferType.Ascii)
             {
-                GetASCII(destinationStream, remoteFile);
+                GetAscii(destinationStream, remoteFile);
             }
             else
             {
@@ -736,7 +737,7 @@ namespace FileTransfer
         /// <param name="remoteFile"> 
         /// name of remote file		
         /// </param>
-        void GetASCII(string localPath, string remoteFile)
+        void GetAscii(string localPath, string remoteFile)
         {
             // B.McKeown:
             // Call initGet() before creating the FileOutputStream.
@@ -778,7 +779,9 @@ namespace FileTransfer
 
                 // if an error occurred, deleted the local file
                 if (storedException != null && File.Exists(localFile.FullName))
+                {
                     File.Delete(localFile.FullName);
+                }
             }
 
             try
@@ -801,18 +804,18 @@ namespace FileTransfer
         /// Get as ASCII, i.e. read a line at a time and write
         /// using the correct newline separator for the OS
         /// </summary>
-        /// <param name="destStream"> 
+        /// <param name="destinationStream"> 
         /// data stream to write data to
         /// </param>
         /// <param name="remoteFile"> 
         /// name of remote file
         /// </param>
-        void GetASCII(Stream destStream, string remoteFile)
+        void GetAscii(Stream destinationStream, string remoteFile)
         {
             InitGet(remoteFile);
 
             // create the buffered stream for writing
-            var writer = new StreamWriter(destStream);
+            var writer = new StreamWriter(destinationStream);
 
             // get an character input stream to read data from ... AFTER we
             // have the ok to go ahead
@@ -929,7 +932,7 @@ namespace FileTransfer
         /// <summary>  
         /// Get as binary file, i.e. straight transfer of data
         /// </summary>
-        /// <param name="destStream"> 
+        /// <param name="destinationStream"> 
         /// stream to write to
         /// </param>
         /// <param name="remoteFile"> 
@@ -1257,8 +1260,7 @@ namespace FileTransfer
             lastValidReply = control.ValidateReply(reply, "213");
 
             // parse the reply string ...
-            var ts = DateTime.ParseExact(lastValidReply.Text, dtFormat, null);
-            return ts;
+            return DateTime.ParseExact(lastValidReply.Text, dtFormat, null);
         }
 
         /// <summary>  

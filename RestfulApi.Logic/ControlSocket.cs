@@ -20,7 +20,10 @@ namespace FileTransfer
             {
                 timeout = value;
                 if (controlSock == null)
+                {
                     throw new SystemException("Failed to set timeout - no control socket");
+                }
+
                 SetSocketTimeout(controlSock, timeout);
             }
         }
@@ -33,7 +36,9 @@ namespace FileTransfer
             set
             {
                 if (value != null)
+                {
                     log = value;
+                }
             }
         }
 
@@ -45,12 +50,12 @@ namespace FileTransfer
         /// <summary>   
         /// Standard FTP end of line sequence
         /// </summary>
-        internal const string EOL = "\r\n";
+        internal const string EndOfLine = "\r\n";
 
         /// <summary>   
         /// The control port number for FTP
         /// </summary>
-        internal const int CONTROL_PORT = 21;
+        internal const int ControlPort = 21;
 
         /// <summary>   Controls if responses sent back by the
         /// server are sent to assigned output stream
@@ -103,8 +108,8 @@ namespace FileTransfer
             int timeout)
         {
             // resolve remote host & take first entry
-            IPHostEntry remoteHostEntry = System.Net.Dns.GetHostEntry(remoteHost);
-            IPAddress[] ipAddresses = remoteHostEntry.AddressList;
+            var remoteHostEntry = System.Net.Dns.GetHostEntry(remoteHost);
+            var ipAddresses = remoteHostEntry.AddressList;
             Initialize(ipAddresses[0], controlPort, log, timeout);
         }
 
@@ -155,7 +160,7 @@ namespace FileTransfer
             DebugResponses(true);
 
             // establish socket connection & set timeouts
-            IPEndPoint ipe = new IPEndPoint(remoteAddr, controlPort);
+            var ipe = new IPEndPoint(remoteAddr, controlPort);
             controlSock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Timeout = timeout;
             controlSock.Connect(ipe);
@@ -173,7 +178,7 @@ namespace FileTransfer
         /// </summary>
         void ValidateConnection()
         {
-            string reply = ReadReply();
+            var reply = ReadReply();
             ValidateReply(reply, "220");
         }
 
@@ -182,7 +187,7 @@ namespace FileTransfer
         /// </summary>
         void InitStreams()
         {
-            NetworkStream stream = new NetworkStream(controlSock, true);
+            var stream = new NetworkStream(controlSock, true);
             writer = new StreamWriter(stream);
             reader = new StreamReader(stream);
         }
@@ -214,7 +219,7 @@ namespace FileTransfer
         internal Socket CreateDataSocket(ConnectMode connectMode)
         {
             // active mode ( PORT )
-            if (connectMode == ConnectMode.ACTIVE)
+            if (connectMode == ConnectMode.Active)
             {
                 return CreateDataSocketActive();
             }
@@ -234,16 +239,16 @@ namespace FileTransfer
         {
             // create listening socket at a system allocated port
             //Socket sock = new Socket( AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
-            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             // choose any port
 
             // 127.0.0.1 converted to a long integer is 2130706433
             // I'm just using the localhost address for a default.
-            IPAddress IP4 = new IPAddress(2130706433);
+            var IP4 = new IPAddress(2130706433);
 
             // Find the local InterNetwork V4 address
-            IPAddress[] IPs = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
+            var IPs = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
             foreach (IPAddress ip in IPs)
             {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
@@ -253,10 +258,10 @@ namespace FileTransfer
                 }
             }
 
-            IPHostEntry localHostEntry = Dns.GetHostEntry(IP4);
+            var localHostEntry = Dns.GetHostEntry(IP4);
 
             // Find the remote InterNetwork V4 address
-            foreach (IPAddress ip in localHostEntry.AddressList)
+            foreach (var ip in localHostEntry.AddressList)
             {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
@@ -265,14 +270,14 @@ namespace FileTransfer
                 }
             }
 
-            IPEndPoint localEndPoint = new IPEndPoint(IP4, 0);
+            var localEndPoint = new IPEndPoint(IP4, 0);
             sock.Bind(localEndPoint);
 
             // queue up to 5 connections
             sock.Listen(5);
 
             // get the listen port
-            int port = ((IPEndPoint)sock.LocalEndPoint).Port;
+            var port = ((IPEndPoint)sock.LocalEndPoint).Port;
             IPAddress addr = ((IPEndPoint)sock.LocalEndPoint).Address;
 
             // find out ip & port we are listening on			
@@ -291,8 +296,8 @@ namespace FileTransfer
             //byte[] hostBytes = BitConverter.GetBytes( ep.Address.Address );
 
             // This is a .NET 1.1 API
-            byte[] hostBytes = ep.Address.GetAddressBytes();
-            byte[] portBytes = ToByteArray((ushort)ep.Port);
+            var hostBytes = ep.Address.GetAddressBytes();
+            var portBytes = ToByteArray((ushort)ep.Port);
 
             // assemble the PORT command
             string cmd = new StringBuilder("PORT ").
@@ -304,7 +309,7 @@ namespace FileTransfer
                 Append((short)portBytes[1]).ToString();
 
             // send command and check reply
-            string reply = SendCommand(cmd);
+            var reply = SendCommand(cmd);
             ValidateReply(reply, "200");
         }
 
@@ -318,7 +323,7 @@ namespace FileTransfer
         /// </returns>
         protected internal byte[] ToByteArray(ushort val)
         {
-            byte[] bytes = new byte[2];
+            var bytes = new byte[2];
             bytes[0] = (byte)(val >> 8); // bits 1- 8
             bytes[1] = (byte)(val & 0x00FF); // bits 9-16
             return bytes;
@@ -336,7 +341,7 @@ namespace FileTransfer
         {
             // PASSIVE command - tells the server to listen for
             // a connection attempt rather than initiating it
-            string reply = SendCommand("PASV");
+            var reply = SendCommand("PASV");
             ValidateReply(reply, "227");
 
             // The reply to PASV is in the form:
@@ -350,8 +355,8 @@ namespace FileTransfer
             // brackets )
 
             // extract the IP data string from between the brackets
-            int startIP = reply.IndexOf('(');
-            int endIP = reply.IndexOf(')');
+            var startIP = reply.IndexOf('(');
+            var endIP = reply.IndexOf(')');
 
             // allow for IBM missing brackets around IP address
             if (startIP < 0 && endIP < 0)
@@ -360,19 +365,20 @@ namespace FileTransfer
                 endIP = reply.Length;
             }
 
-            string ipData = reply.Substring(startIP + 1, (endIP) - (startIP + 1));
-            int[] parts = new int[6];
-
-            int len = ipData.Length;
-            int partCount = 0;
-            StringBuilder buf = new StringBuilder();
+            var ipData = reply.Substring(startIP + 1, (endIP) - (startIP + 1));
+            var parts = new int[6];
+            var len = ipData.Length;
+            var partCount = 0;
+            var buf = new StringBuilder();
 
             // loop thru and examine each char
             for (int i = 0; i < len && partCount <= 6; i++)
             {
-                char ch = ipData[i];
+                var ch = ipData[i];
                 if (char.IsDigit(ch))
+                {
                     buf.Append(ch);
+                }
                 else if (ch != ',')
                 {
                     throw new FtpException("Malformed PASV reply: " + reply);
@@ -396,32 +402,13 @@ namespace FileTransfer
 
             // assemble the IP address
             // we try connecting, so we don't bother checking digits etc
-            string ipAddress = string.Format("{0}.{1}.{2}.{3}", parts[0], parts[1], parts[2], parts[3]);
+            var ipAddress = string.Format("{0}.{1}.{2}.{3}", parts[0], parts[1], parts[2], parts[3]);
 
             // assemble the port number
-            int port = (parts[4] << 8) + parts[5];
-
-            // *********** This is the only one that works so far.
-            //IPHostEntry remoteHostEntry = Dns.GetHostByName(ipAddress);
-            //IPEndPoint ipe = new IPEndPoint(remoteHostEntry.AddressList[0], port);
-
-            // create socket and return
-            // IPHostEntry remoteHostEntry = Dns.GetHostEntry(ipAddress);
-            //IPHostEntry remoteHostEntry = Dns.GetHostByAddress(ipAddress);
-
-            IPAddress addr = Dns.GetHostAddresses(ipAddress)[0];
-            IPEndPoint ipe = new IPEndPoint(addr, port);
-
-            //IPAddress addr = Dns.GetHostAddresses(ipAddress)[0];
-            //IPEndPoint ipe = new IPEndPoint(addr, port);
-
-            //IPAddress ip = Dns.GetHostEntry(ipAddress).AddressList
-            //    .Where(a => !a.IsIPv6LinkLocal && !a.IsIPv6Multicast && !a.IsIPv6SiteLocal && !a.IsIPv6Teredo)
-            //    .First();
-
-            // IPEndPoint ipe = new IPEndPoint(ip, port);
-
-            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var port = (parts[4] << 8) + parts[5];            
+            var addr = Dns.GetHostAddresses(ipAddress)[0];
+            var ipe = new IPEndPoint(addr, port);
+            var sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             SetSocketTimeout(sock, timeout);
             sock.Connect(ipe);
             return sock;
@@ -437,10 +424,12 @@ namespace FileTransfer
         internal string SendCommand(string command)
         {
             if (debugResponses)
+            {
                 log.WriteLine("---> " + command);
+            }
 
             // send it
-            writer.Write(command + EOL);
+            writer.Write(command + EndOfLine);
             writer.Flush();
 
             // and read the result
@@ -460,30 +449,37 @@ namespace FileTransfer
         /// </returns>
         internal string ReadReply()
         {
-            string firstLine = reader.ReadLine();
+            var firstLine = reader.ReadLine();
             if (firstLine == null || firstLine.Length == 0)
+            { 
                 throw new IOException("Unexpected null reply received");
+            }
 
-            StringBuilder reply = new StringBuilder(firstLine);
+            var reply = new StringBuilder(firstLine);
 
             if (debugResponses)
+            {
                 log.WriteLine(reply.ToString());
+            }
 
-            string replyCode = reply.ToString().Substring(0, 3);
+            var replyCode = reply.ToString().Substring(0, 3);
 
-            // check for multiline response and build up
-            // the reply
+            // Check for multiline response and build up the reply.
             if (reply[3] == '-')
             {
-                bool complete = false;
+                var complete = false;
                 while (!complete)
                 {
-                    string line = reader.ReadLine();
+                    var line = reader.ReadLine();
                     if (line == null)
+                    {
                         throw new IOException("Unexpected null reply received");
+                    }
 
                     if (debugResponses)
+                    { 
                         log.WriteLine(line);
+                    }
 
                     if (line.Length > 3 && line.Substring(0, 3).Equals(replyCode) && line[3] == ' ')
                     {
@@ -492,13 +488,12 @@ namespace FileTransfer
                     }
                     else
                     {
-                        // not the last line
                         reply.Append(" ");
                         reply.Append(line);
                     }
-                } // end while
+                } 
             }
-            // end if
+
             return reply.ToString();
         }
 
@@ -517,12 +512,14 @@ namespace FileTransfer
         internal Reply ValidateReply(string reply, string expectedReplyCode)
         {
             // all reply codes are 3 chars long
-            string replyCode = reply.Substring(0, 3);
-            string replyText = reply.Substring(4);
-            Reply replyObj = new Reply(replyCode, replyText);
+            var replyCode = reply.Substring(0, 3);
+            var replyText = reply.Substring(4);
+            var replyObj = new Reply(replyCode, replyText);
 
             if (replyCode.Equals(expectedReplyCode))
+            {
                 return replyObj;
+            }
 
             // if unexpected reply, throw an exception
             throw new FtpException(replyText, replyCode);
@@ -546,14 +543,17 @@ namespace FileTransfer
         internal Reply ValidateReply(string reply, string[] expectedReplyCodes)
         {
             // all reply codes are 3 chars long
-            string replyCode = reply.Substring(0, 3);
-            string replyText = reply.Substring(4);
-
-            Reply replyObj = new Reply(replyCode, replyText);
+            var replyCode = reply.Substring(0, 3);
+            var replyText = reply.Substring(4);
+            var replyObj = new Reply(replyCode, replyText);
 
             for (int i = 0; i < expectedReplyCodes.Length; i++)
+            {
                 if (replyCode.Equals(expectedReplyCodes[i]))
+                {
                     return replyObj;
+                }
+            }
 
             // got this far, not recognised
             throw new FtpException(replyText, replyCode);
@@ -582,10 +582,8 @@ namespace FileTransfer
         {
             if (timeout > 0)
             {
-                sock.SetSocketOption(SocketOptionLevel.Socket,
-                    SocketOptionName.ReceiveTimeout, timeout);
-                sock.SetSocketOption(SocketOptionLevel.Socket,
-                    SocketOptionName.SendTimeout, timeout);
+                sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, timeout);
+                sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, timeout);
             }
         }
 

@@ -15,11 +15,11 @@ namespace FileTransfer
         /// <member>   
         /// Represents ASCII transfer type
         /// </member>
-        ASCII = 1,
+        Ascii = 1,
 
         /// <member>   
         /// Represents Image ( or binary ) transfer type
         /// </member>
-        BINARY = 2
+        Binary = 2
     }
 }

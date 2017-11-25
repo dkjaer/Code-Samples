@@ -9,6 +9,18 @@ namespace FileTransfer
         Tamir.SharpSsh.Sftp sftp;
         string errorMessage = string.Empty;
 
+        public event UpdateEventHandler TransferStart;
+        protected virtual void OnTransferStart(UpdateEventArgs e)
+        {
+            TransferStart?.Invoke(this, e);
+        }
+
+        public event UpdateEventHandler TransferEnd;
+        protected virtual void OnTransferEnd(UpdateEventArgs e)
+        {
+            TransferEnd?.Invoke(this, e);
+        }
+
         public event UpdateEventHandler BinaryUpdate;
         protected virtual void OnBinaryUpdate(UpdateEventArgs e)
         {
@@ -36,22 +48,22 @@ namespace FileTransfer
         {
             //settings = new FtpSettings();
             sftp = new Tamir.SharpSsh.Sftp(url, username, password);
-            sftp.OnTransferProgress += sftp_TransferProgress;
-            sftp.OnTransferStart += sftp_TransferStart;
-            sftp.OnTransferEnd += sftp_TransferEnd;
+            sftp.OnTransferProgress += Sftp_TransferProgress;
+            sftp.OnTransferStart += Sftp_TransferStart;
+            sftp.OnTransferEnd += Sftp_TransferEnd;
         }
 
-        void sftp_TransferEnd(string source, string destination, int transferredBytes, int totalBytes, string message)
+        void Sftp_TransferStart(string source, string destination, int transferredBytes, int totalBytes, string message)
         {
-
+            OnTransferStart(new UpdateEventArgs(transferredBytes, totalBytes));
         }
 
-        void sftp_TransferStart(string source, string destination, int transferredBytes, int totalBytes, string message)
+        void Sftp_TransferEnd(string source, string destination, int transferredBytes, int totalBytes, string message)
         {
-
+            OnTransferEnd(new UpdateEventArgs(transferredBytes, totalBytes));
         }
 
-        void sftp_TransferProgress(string source, string destination, int transferredBytes, int totalBytes, string message)
+        void Sftp_TransferProgress(string source, string destination, int transferredBytes, int totalBytes, string message)
         {
             OnBinaryUpdate(new UpdateEventArgs(transferredBytes, totalBytes));
         }
