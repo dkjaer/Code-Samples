@@ -1,7 +1,52 @@
-﻿<div class="row">
-    <div class="col-md-12">
-        <h2>RESTful API</h2>
-        <p>This project contains sample code from a project that I worked on.</p>
-		<p>Dave Kjaer</p>
-    </div>
-</div>
+﻿@model List<Common.User>
+
+<script type="text/javascript">
+
+    function deleteUser(userId, firstName, lastName) {
+        if (confirm("The user \"" + firstName + " " + lastName + "\" will be deleted.\n\nClick OK to proceed")) {
+            $.ajax({
+                url: '@Url.Action("User", "Home")/' + userId,
+                type: "DELETE",
+                contentType: "application/json;charset=utf-8",
+				success: function () {
+                    window.location.href = '@Url.Action()';
+                }
+            });
+        }
+    }
+
+</script>
+
+<h3>Test Users</h3>
+<a class="btn btn-primary" href="@Url.Action("User", "Home", new {id = 0})"><i class="fa fa-lg fa-user"></i> Add User</a>
+
+<br />&nbsp;
+<table class="table table-striped" style="border-bottom:0;"
+	   data-toggle="table"
+	   data-sort-name="lastName"
+	   data-sort-order="asc"
+	   data-pagination="true"
+	   data-page-size="10"
+	   data-search="true">
+	<thead>
+		<tr>
+			<th class="col-xs-3" data-field="firstName" data-sortable="true">First Name</th>
+			<th class="col-xs-3" data-field="lastName" data-sortable="true">Last Name</th>
+			<th class="col-xs-4" data-field="email" data-sortable="true">Email Address</th>
+			<th class="col-xs-1 text-center">Edit</th>
+			<th class="col-xs-1 text-center">Remove</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var user in Model)
+		{
+			<tr>
+				<td>@user.FirstName</td>
+				<td>@user.LastName</td>
+				<td>@user.EmailAddress</td>
+				<td><a href="@Url.Action("User", "Home", new {id = user.UserId })"><i class="fa fa-pencil fa-lg text-primary"></i></a></td>
+				<td><a href="#" onclick="deleteUser(@user.UserId, '@user.FirstName', '@user.LastName'); return false;"><i class="fa fa-trash fa-lg text-primary"></i></a></td>
+			</tr>
+		}
+	</tbody>
+</table>

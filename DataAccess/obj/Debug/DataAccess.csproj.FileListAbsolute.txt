@@ -1,0 +1,11 @@
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\DataAccess.dll
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\DataAccess.pdb
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\Common.dll
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\Dapper.dll
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\System.Data.SqlServerCe.dll
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\Common.pdb
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\bin\Debug\Dapper.xml
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\obj\Debug\DataAccess.csprojResolveAssemblyReference.cache
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\obj\Debug\DataAccess.csproj.CoreCompileInputs.cache
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\obj\Debug\DataAccess.dll
+C:\Users\Dave\Documents\GitHub\Code-Samples\DataAccess\obj\Debug\DataAccess.pdb
