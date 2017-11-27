@@ -4,26 +4,23 @@ using FileTransfer;
 
 namespace RestfulApi.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FtpController : ApiController
     {
-        // POST api/values
-        [Route("Upload")]
-        public void Post(
-            string url,
-            bool useSsh,
-            string username,
-            string password,
-            string subFolder,
-            bool checkForFile,
-            bool renameAfterUpload,
-            ConnectMode connectMode,
-            TransferType transferType,
-            string sharePointFilePath)
+        void Client_ProgressChanged(object sender, FileTransferEventArgs e)
         {
+
         }
 
+        void Client_StatusChanged(object sender, FileTransferEventArgs e)
+        {
+
+        }
+        
         /// <summary>
-        /// Upload a document from shared storage to an FTP server.
+        /// Upload a document to an FTP server.
         /// </summary>
         /// <param name="url"></param>
         /// <param name="useSsh"></param>
@@ -34,7 +31,7 @@ namespace RestfulApi.Controllers
         /// <param name="renameAfterUpload"></param>
         /// <param name="connectMode"></param>
         /// <param name="transferType"></param>
-        /// <param name="sharePointFilePath"></param>
+        /// <param name="localFilePath"></param>
         /// <returns></returns>
         [Route("Upload")]
         public IHttpActionResult PostFile(
@@ -74,7 +71,7 @@ namespace RestfulApi.Controllers
         }
 
         /// <summary>
-        /// Return a list of file in an FTP directory.
+        /// Return a list of files in an FTP directory.
         /// </summary>
         /// <param name="url"></param>
         /// <param name="useSsh"></param>
@@ -108,16 +105,6 @@ namespace RestfulApi.Controllers
             }
 
             return Ok(result);
-        }
-
-        void Client_ProgressChanged(object sender, FileTransferEventArgs e)
-        {
-
-        }
-
-        void Client_StatusChanged(object sender, FileTransferEventArgs e)
-        {
-
         }
     }
 }
